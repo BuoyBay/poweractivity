@@ -1,0 +1,89 @@
+#If TargetMac Then
+    Private Declare Function NativeClass Lib "objc" Alias "objc_getClass" (name As String) As Ptr
+    Private Declare Function ProcessInfo Lib "Foundation" Selector "processInfo" (cls As Ptr) As Ptr
+    Private Declare Function BeginNative Lib "Foundation" Selector "beginActivityWithOptions:reason:" (process As Ptr, options As UInt64, reason As CFStringRef) As Ptr
+    Private Declare Sub EndNative Lib "Foundation" Selector "endActivity:" (process As Ptr, token As Ptr)
+    Private Declare Function RetainNative Lib "Foundation" Selector "retain" (object As Ptr) As Ptr
+    Private Declare Sub ReleaseNative Lib "CoreFoundation" Alias "CFRelease" (object As Ptr)
+    Private Declare Function DeclareUserActivityNative Lib "buoy_poweractivity" Alias "buoy_poweractivity_refresh" (reason As CFStringRef, ByRef assertionID As UInt32) As Int32
+    Private Declare Function ReleaseAssertionNative Lib "buoy_poweractivity" Alias "buoy_poweractivity_release" (assertionID As UInt32) As Int32
+#End If
+
+Public Function PowerActivitySupported() As Boolean
+    #If TargetMac Then
+        Return True
+    #Else
+        Return False
+    #End If
+End Function
+
+''' A balanced native activity token. Keep it alive for the work, then Close in Finally.
+Public Class PowerActivity
+    Private Property mToken As Ptr = Nil
+    Private Property mProcess As Ptr = Nil
+    Private Property mReason As String = ""
+    Private Property mUserActivityID As UInt32 = 0
+    Public Property IsActive As Boolean
+        Get
+            Return Me.mToken <> Nil
+        End Get
+    End Property
+
+    Public Sub Constructor(reason As String, preventIdleSleep As Boolean = False, keepDisplayAwake As Boolean = False)
+        If String.Trim(reason) = "" Then Throw New InvalidArgumentException("An activity reason is required")
+        If Not PowerActivitySupported() Then Throw New InvalidArgumentException("Power activities require macOS")
+        Me.mReason = reason
+        #If TargetMac Then
+            ' NSActivityUserInitiatedAllowingIdleSystemSleep = 0x00EFFFFF.
+            Dim options As UInt64 = 15728639
+            If preventIdleSleep Then options = options Or 1048576
+            If keepDisplayAwake Then options = options Or 1099511627776
+            Me.mProcess = ProcessInfo(NativeClass("NSProcessInfo"))
+            Dim nativeReason As CFStringRef = CType(reason, CFStringRef)
+            Try
+                Dim token As Ptr = BeginNative(Me.mProcess, options, nativeReason)
+                If token = Nil Then Throw New Exception("Could not begin a native power activity")
+                Me.mToken = RetainNative(token)
+            Finally
+                ReleaseNative(nativeReason)
+            End Try
+        #End If
+    End Sub
+
+    ''' Optional local user-activity reporting; not required for sleep/display prevention.
+    ''' If reporting continuously, refresh before the configured idle timeout.
+    ''' May wake the display. This does not unlock an already locked session.
+    Public Sub RefreshUserActivity()
+        If Not Me.IsActive Then Throw New InvalidArgumentException("Cannot refresh a closed power activity")
+        #If TargetMac Then
+            Dim nativeReason As CFStringRef = CType(String.Left(Me.mReason, 128), CFStringRef)
+            Try
+                ' The API may replace its ID on refresh; always keep the returned ID.
+                Dim assertionID As UInt32 = Me.mUserActivityID
+                Dim status As Int32 = DeclareUserActivityNative(nativeReason, assertionID)
+                If status <> 0 Then Throw New Exception("Could not declare local user activity")
+                Me.mUserActivityID = assertionID
+            Finally
+                ReleaseNative(nativeReason)
+            End Try
+        #End If
+    End Sub
+
+    Public Sub Close()
+        If Me.mToken = Nil Then Return
+        #If TargetMac Then
+            If Me.mUserActivityID <> 0 Then
+                Dim status As Int32 = ReleaseAssertionNative(Me.mUserActivityID)
+                Me.mUserActivityID = 0
+            End If
+            Dim token As Ptr = Me.mToken
+            Me.mToken = Nil
+            EndNative(Me.mProcess, token)
+            ReleaseNative(token)
+            Me.mProcess = Nil
+        #End If
+    End Sub
+    Public Sub Destructor()
+        Me.Close()
+    End Sub
+End Class

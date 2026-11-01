@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "inputs": {
+    "native/bridge.c": "a4f2d4cb5a8f462dec4fc004e3575fcf10941c4073e30ff2cf8001e0f27d7bdb",
+    "build_native.py": "ecd36bedf4c9385abcd75d54c719599b65243a3ff050c00648f34c724474e8c2"
+  },
+  "outputs": {
+    "runtime/arm64-apple-macos/libbuoy_poweractivity.dylib": "defca436602450f29caca0e710a74ebcffaa3a852fed39e76be7b4c1202e3686",
+    "runtime/x86_64-apple-macos/libbuoy_poweractivity.dylib": "defca436602450f29caca0e710a74ebcffaa3a852fed39e76be7b4c1202e3686"
+  }
+}

@@ -1,0 +1,12 @@
+Import poweractivity
+
+Sub Main()
+    If Not PowerActivitySupported() Then Return
+    Dim activity As New PowerActivity("Running GUI tests", preventIdleSleep: True, keepDisplayAwake: True)
+    Try
+        ' Replace with your task. The token keeps the display awake without a timer.
+        Thread.Sleep(3000)
+    Finally
+        activity.Close()
+    End Try
+End Sub

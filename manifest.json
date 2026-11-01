@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "name": "poweractivity",
+  "version": "0.1.0",
+  "description": "Balanced scoped macOS process activities and explicit user-activity refresh",
+  "libraries": [
+    {
+      "libName": "buoy_poweractivity",
+      "system": false
+    }
+  ],
+  "platforms": [
+    "arm64-apple-macos",
+    "x86_64-apple-macos"
+  ]
+}
