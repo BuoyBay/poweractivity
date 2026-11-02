@@ -45,15 +45,12 @@ is changed. This is explicit opt-in activity reporting, not a global setting.
 The archive includes an SDK-linked universal macOS bridge for IOKit, which Buoy
 0.72.0's bundled stubs omit. To rebuild it on a Mac, run
 `python3 build_native.py`, then seal the package with
-`python3 tools/build_integrations.py poweractivity --all-targets`.
+the native package builder described in
+[CONTRIBUTING](https://github.com/BuoyBay/poweractivity/blob/main/CONTRIBUTING.md).
 Remove this bridge only after direct IOKit declarations build and pass the saved
 native lifecycle test on supported macOS architectures; see the supplemental
 upstream evidence.
 
-Maintainers run the private validation suite before release. See the repository README for public build instructions.
-
 [Apple's activity options](https://developer.apple.com/documentation/foundation/processinfo/activityoptions)
 explain the tradeoffs. The native smoke test acquires and immediately closes a
 default activity; the dedicated keep-awake test above exercises the prevention options.
-
-Maintainers run the private validation suite before release. See the repository README for public build instructions.
