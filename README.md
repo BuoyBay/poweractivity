@@ -1,4 +1,4 @@
-# Manage scoped macOS process and user activities
+# Scoped macOS process and user activity tokens
 
 `Import poweractivity` exposes a scoped native macOS activity token:
 `New PowerActivity(reason, preventIdleSleep = False, keepDisplayAwake = False)`.
@@ -24,7 +24,7 @@ consumer project for reproducible installs.
 
 ## Example
 
-```buoy
+```basic
 Import poweractivity
 
 Sub RunUserRequestedWork()
