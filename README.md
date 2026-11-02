@@ -1,4 +1,4 @@
-# Scoped macOS process and user activity tokens
+# macOS activity tokens
 
 `Import poweractivity` exposes a scoped native macOS activity token:
 `New PowerActivity(reason, preventIdleSleep = False, keepDisplayAwake = False)`.

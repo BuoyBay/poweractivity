@@ -2,7 +2,7 @@
     "schema": 1,
     "name": "poweractivity",
     "version": "0.1.0",
-    "description": "Scoped macOS process and user activity tokens",
+    "description": "macOS activity tokens",
     "libraries": [
         {
             "libName": "buoy_poweractivity",
